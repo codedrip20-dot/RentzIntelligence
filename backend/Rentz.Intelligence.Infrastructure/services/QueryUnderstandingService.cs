@@ -23,11 +23,16 @@ public class QueryUnderstandingService : IQueryUnderstandingService
             MaxRent = ExtractMaxRent(normalizedQuery),
             MinBedrooms = ExtractMinBedrooms(normalizedQuery),
             MinBathrooms = ExtractMinBathrooms(normalizedQuery),
-            PropertyType = ExtractPropertyType(normalizedQuery)
+            PropertyType = ExtractPropertyType(normalizedQuery),
+            Amenities = ExtractAmenities(normalizedQuery)
         };
 
         return Task.FromResult(request);
     }
+
+    // =========================================================
+    // CITY
+    // =========================================================
 
     private static string? ExtractCity(string query)
     {
@@ -42,8 +47,14 @@ public class QueryUnderstandingService : IQueryUnderstandingService
         };
 
         return cities.FirstOrDefault(city =>
-            query.Contains(city, StringComparison.OrdinalIgnoreCase));
+            query.Contains(
+                city,
+                StringComparison.OrdinalIgnoreCase));
     }
+
+    // =========================================================
+    // MINIMUM RENT
+    // =========================================================
 
     private static decimal? ExtractMinRent(string query)
     {
@@ -56,7 +67,7 @@ public class QueryUnderstandingService : IQueryUnderstandingService
         // above 20k
         // over ₹20,000
         //
-        // Also handles ranges:
+        // Also handles:
         // between 15000 and 25000
         // between 15k and 25k
         // from 15k to 25k
@@ -89,6 +100,10 @@ public class QueryUnderstandingService : IQueryUnderstandingService
             match.Groups[2].Value);
     }
 
+    // =========================================================
+    // MAXIMUM RENT
+    // =========================================================
+
     private static decimal? ExtractMaxRent(string query)
     {
         // Handles:
@@ -100,7 +115,7 @@ public class QueryUnderstandingService : IQueryUnderstandingService
         // up to 25k
         // under ₹25,000
         //
-        // Also handles ranges:
+        // Also handles:
         // between 15000 and 25000
         // between 15k and 25k
         // from 15k to 25k
@@ -133,6 +148,10 @@ public class QueryUnderstandingService : IQueryUnderstandingService
             match.Groups[2].Value);
     }
 
+    // =========================================================
+    // BEDROOMS
+    // =========================================================
+
     private static int? ExtractMinBedrooms(string query)
     {
         var match = Regex.Match(
@@ -147,6 +166,10 @@ public class QueryUnderstandingService : IQueryUnderstandingService
 
         return int.Parse(match.Groups[1].Value);
     }
+
+    // =========================================================
+    // BATHROOMS
+    // =========================================================
 
     private static int? ExtractMinBathrooms(string query)
     {
@@ -163,6 +186,10 @@ public class QueryUnderstandingService : IQueryUnderstandingService
         return int.Parse(match.Groups[1].Value);
     }
 
+    // =========================================================
+    // PROPERTY TYPE
+    // =========================================================
+
     private static string? ExtractPropertyType(string query)
     {
         var propertyTypes = new[]
@@ -172,8 +199,148 @@ public class QueryUnderstandingService : IQueryUnderstandingService
         };
 
         return propertyTypes.FirstOrDefault(type =>
-            query.Contains(type, StringComparison.OrdinalIgnoreCase));
+            query.Contains(
+                type,
+                StringComparison.OrdinalIgnoreCase));
     }
+
+    // =========================================================
+    // AMENITIES
+    // =========================================================
+
+    private static List<string> ExtractAmenities(string query)
+    {
+        var amenities = new Dictionary<string, string[]>(
+            StringComparer.OrdinalIgnoreCase)
+        {
+            ["Wi-Fi"] = new[]
+            {
+                "wifi",
+                "wi-fi",
+                "wi fi",
+                "internet"
+            },
+
+            ["Parking"] = new[]
+            {
+                "parking",
+                "car parking",
+                "vehicle parking"
+            },
+
+            ["Power Backup"] = new[]
+            {
+                "power backup",
+                "backup power",
+                "electricity backup",
+                "backup electricity",
+                "generator"
+            },
+
+            ["24/7 Security"] = new[]
+            {
+                "security",
+                "24/7 security",
+                "24 7 security",
+                "security guard"
+            },
+
+            ["Gym"] = new[]
+            {
+                "gym",
+                "fitness center",
+                "fitness centre"
+            },
+
+            ["Swimming Pool"] = new[]
+            {
+                "swimming pool",
+                "pool"
+            },
+
+            ["Balcony"] = new[]
+            {
+                "balcony",
+                "balconies"
+            },
+
+            ["Fully Equipped Kitchen"] = new[]
+            {
+                "fully equipped kitchen",
+                "equipped kitchen",
+                "modular kitchen"
+            },
+
+            ["Laundry"] = new[]
+            {
+                "laundry",
+                "washing machine"
+            },
+
+            ["CCTV"] = new[]
+            {
+                "cctv",
+                "surveillance",
+                "security cameras"
+            },
+
+            ["Elevator"] = new[]
+            {
+                "elevator",
+                "lift"
+            },
+
+            ["Pet Friendly"] = new[]
+            {
+                "pet friendly",
+                "pets allowed",
+                "allows pets",
+                "pet-friendly"
+            },
+
+            ["Garden"] = new[]
+            {
+                "garden",
+                "backyard",
+                "green space"
+            },
+
+            ["Rooftop"] = new[]
+            {
+                "rooftop",
+                "roof top",
+                "terrace"
+            },
+
+            ["Housekeeping"] = new[]
+            {
+                "housekeeping",
+                "cleaning service",
+                "cleaning services"
+            }
+        };
+
+        var matchedAmenities = new List<string>();
+
+        foreach (var amenity in amenities)
+        {
+            var found = amenity.Value.Any(keyword =>
+                query.Contains(
+                    keyword,
+                    StringComparison.OrdinalIgnoreCase));
+
+            if (found)
+            {
+                matchedAmenities.Add(amenity.Key);
+            }
+        }
+
+        return matchedAmenities;
+    }
+
+    // =========================================================
+    // RENT PARSER
+    // =========================================================
 
     private static decimal? ParseRent(
         string value,
@@ -190,7 +357,9 @@ public class QueryUnderstandingService : IQueryUnderstandingService
             return null;
         }
 
-        if (suffix.Equals("k", StringComparison.OrdinalIgnoreCase))
+        if (suffix.Equals(
+                "k",
+                StringComparison.OrdinalIgnoreCase))
         {
             amount *= 1000;
         }

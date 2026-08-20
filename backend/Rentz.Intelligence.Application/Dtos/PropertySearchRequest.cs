@@ -13,4 +13,6 @@ public class PropertySearchRequest
     public int? MinBathrooms { get; set; }
 
     public string? PropertyType { get; set; }
+
+    public List<string> Amenities { get; set; } = new();
 }

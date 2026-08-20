@@ -9,14 +9,21 @@ public class PropertiesController : ControllerBase
 {
     private readonly IPropertyService _propertyService;
     private readonly IQueryUnderstandingService _queryUnderstandingService;
+    private readonly IPropertyRankingService _propertyRankingService;
 
     public PropertiesController(
         IPropertyService propertyService,
-        IQueryUnderstandingService queryUnderstandingService)
+        IQueryUnderstandingService queryUnderstandingService,
+        IPropertyRankingService propertyRankingService)
     {
         _propertyService = propertyService;
         _queryUnderstandingService = queryUnderstandingService;
+        _propertyRankingService = propertyRankingService;
     }
+
+    // =========================================================
+    // GET ALL PROPERTIES
+    // =========================================================
 
     [HttpGet]
     public async Task<IActionResult> GetProperties()
@@ -25,6 +32,10 @@ public class PropertiesController : ControllerBase
 
         return Ok(properties);
     }
+
+    // =========================================================
+    // GET SINGLE PROPERTY
+    // =========================================================
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetProperty(Guid id)
@@ -39,21 +50,50 @@ public class PropertiesController : ControllerBase
         return Ok(property);
     }
 
+    // =========================================================
+    // SEARCH + RANK PROPERTIES
+    // =========================================================
+
     [HttpGet("search")]
     public async Task<IActionResult> SearchProperties(
         [FromQuery] string query)
     {
+        // Validate query
         if (string.IsNullOrWhiteSpace(query))
         {
             return BadRequest("Search query is required.");
         }
 
+        // =====================================================
+        // STEP 1 — UNDERSTAND NATURAL LANGUAGE
+        // =====================================================
+
         var searchRequest =
-            await _queryUnderstandingService.UnderstandQueryAsync(query);
+            await _queryUnderstandingService
+                .UnderstandQueryAsync(query);
+
+        // =====================================================
+        // STEP 2 — FILTER PROPERTIES
+        // =====================================================
 
         var properties =
-            await _propertyService.SearchPropertiesAsync(searchRequest);
+            await _propertyService
+                .SearchPropertiesAsync(searchRequest);
 
-        return Ok(properties);
+        // =====================================================
+        // STEP 3 — RANK MATCHING PROPERTIES
+        // =====================================================
+
+        var rankedProperties =
+            await _propertyRankingService
+                .RankPropertiesAsync(
+                    properties,
+                    searchRequest);
+
+        // =====================================================
+        // STEP 4 — RETURN RANKED RESULTS
+        // =====================================================
+
+        return Ok(rankedProperties);
     }
 }

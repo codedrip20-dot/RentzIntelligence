@@ -14,12 +14,20 @@ public class PropertyService : IPropertyService
         _context = context;
     }
 
+    // =========================================================
+    // GET ALL PROPERTIES
+    // =========================================================
+
     public async Task<List<Domain.Entities.Property>> GetPropertiesAsync()
     {
         return await _context.Properties
             .AsNoTracking()
             .ToListAsync();
     }
+
+    // =========================================================
+    // GET SINGLE PROPERTY
+    // =========================================================
 
     public async Task<PropertyDetailsResponse?> GetPropertyAsync(Guid id)
     {
@@ -32,6 +40,7 @@ public class PropertyService : IPropertyService
             return null;
         }
 
+        // Get amenities
         var amenities = await (
             from pa in _context.PropertyAmenities
             join a in _context.Amenities
@@ -42,6 +51,7 @@ public class PropertyService : IPropertyService
         .AsNoTracking()
         .ToListAsync();
 
+        // Get images
         var images = await _context.PropertyImages
             .AsNoTracking()
             .Where(i => i.PropertyId == id)
@@ -53,6 +63,7 @@ public class PropertyService : IPropertyService
             })
             .ToListAsync();
 
+        // Get documents
         var documents = await _context.PropertyDocuments
             .AsNoTracking()
             .Where(d => d.PropertyId == id)
@@ -85,61 +96,129 @@ public class PropertyService : IPropertyService
         };
     }
 
-    public async Task<List<Domain.Entities.Property>> SearchPropertiesAsync(
+    // =========================================================
+    // SEARCH PROPERTIES
+    // =========================================================
+
+    public async Task<List<PropertySearchResponse>> SearchPropertiesAsync(
         PropertySearchRequest request)
     {
         var query = _context.Properties
             .AsNoTracking()
             .AsQueryable();
 
-        // City filter
+        // =====================================================
+        // CITY FILTER
+        // =====================================================
+
         if (!string.IsNullOrWhiteSpace(request.City))
         {
-            var city = request.City.Trim().ToLower();
+            var city = request.City
+                .Trim()
+                .ToLower();
 
             query = query.Where(p =>
                 p.City.ToLower() == city);
         }
 
-        // Minimum rent filter
+        // =====================================================
+        // MINIMUM RENT FILTER
+        // =====================================================
+
         if (request.MinRent.HasValue)
         {
             query = query.Where(p =>
                 p.MonthlyRent >= request.MinRent.Value);
         }
 
-        // Maximum rent filter
+        // =====================================================
+        // MAXIMUM RENT FILTER
+        // =====================================================
+
         if (request.MaxRent.HasValue)
         {
             query = query.Where(p =>
                 p.MonthlyRent <= request.MaxRent.Value);
         }
 
-        // Minimum bedrooms filter
+        // =====================================================
+        // MINIMUM BEDROOMS FILTER
+        // =====================================================
+
         if (request.MinBedrooms.HasValue)
         {
             query = query.Where(p =>
                 p.Bedrooms >= request.MinBedrooms.Value);
         }
 
-        // Minimum bathrooms filter
+        // =====================================================
+        // MINIMUM BATHROOMS FILTER
+        // =====================================================
+
         if (request.MinBathrooms.HasValue)
         {
             query = query.Where(p =>
                 p.Bathrooms >= request.MinBathrooms.Value);
         }
 
-        // Property type filter
+        // =====================================================
+        // PROPERTY TYPE FILTER
+        // =====================================================
+
         if (!string.IsNullOrWhiteSpace(request.PropertyType))
         {
-            var propertyType = request.PropertyType.Trim();
+            var propertyType = request.PropertyType
+                .Trim();
 
             query = query.Where(p =>
                 p.PropertyType == propertyType);
         }
 
+        // =====================================================
+        // AMENITY FILTER
+        // =====================================================
+
+        if (request.Amenities.Count > 0)
+        {
+            var requestedAmenities = request.Amenities
+                .Select(a => a.Trim().ToLower())
+                .Where(a => !string.IsNullOrWhiteSpace(a))
+                .ToList();
+
+            foreach (var amenity in requestedAmenities)
+            {
+                query = query.Where(property =>
+                    _context.PropertyAmenities.Any(pa =>
+                        pa.PropertyId == property.Id &&
+                        _context.Amenities.Any(a =>
+                            a.Id == pa.AmenityId &&
+                            a.Name.ToLower() == amenity
+                        )
+                    )
+                );
+            }
+        }
+
+        // =====================================================
+        // BUILD SEARCH RESPONSE
+        // =====================================================
+
         return await query
             .OrderBy(p => p.MonthlyRent)
+            .Select(p => new PropertySearchResponse
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                PropertyType = p.PropertyType,
+                City = p.City,
+                State = p.State,
+                Country = p.Country,
+                MonthlyRent = p.MonthlyRent,
+                Bedrooms = p.Bedrooms,
+                Bathrooms = p.Bathrooms,
+                FurnishingType = p.FurnishingType
+            })
             .ToListAsync();
     }
 }

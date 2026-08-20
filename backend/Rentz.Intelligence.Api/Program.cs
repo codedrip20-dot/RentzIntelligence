@@ -5,30 +5,57 @@ using Rentz.Intelligence.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// =========================================================
+// SERVICES
+// =========================================================
+
 // Controllers
 builder.Services.AddControllers();
 
-// Database
+// =========================================================
+// DATABASE
+// =========================================================
+
 builder.Services.AddDbContext<RentzDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")
     )
 );
 
-// Application services
-builder.Services.AddScoped<IPropertyService, PropertyService>();
+// =========================================================
+// APPLICATION SERVICES
+// =========================================================
 
+// Property service
+builder.Services.AddScoped<
+    IPropertyService,
+    PropertyService
+>();
+
+// Query understanding service
 builder.Services.AddScoped<
     IQueryUnderstandingService,
     QueryUnderstandingService
 >();
 
-// OpenAPI
+// Property ranking service
+builder.Services.AddScoped<
+    IPropertyRankingService,
+    PropertyRankingService
+>();
+
+// =========================================================
+// OPENAPI
+// =========================================================
+
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// HTTP request pipeline
+// =========================================================
+// HTTP REQUEST PIPELINE
+// =========================================================
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

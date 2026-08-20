@@ -9,6 +9,6 @@ public interface IPropertyService
 
     Task<PropertyDetailsResponse?> GetPropertyAsync(Guid id);
 
-    Task<List<Property>> SearchPropertiesAsync(
+    Task<List<PropertySearchResponse>> SearchPropertiesAsync(
         PropertySearchRequest request);
 }

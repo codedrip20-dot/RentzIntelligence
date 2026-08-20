@@ -4,5 +4,6 @@
     <Project Path="backend/Rentz.Intelligence.Application/Rentz.Intelligence.Application.csproj" />
     <Project Path="backend/Rentz.Intelligence.Domain/Rentz.Intelligence.Domain.csproj" />
     <Project Path="backend/Rentz.Intelligence.Infrastructure/Rentz.Intelligence.Infrastructure.csproj" />
+    <Project Path="backend/Rentz.Intelligence.Tests/Rentz.Intelligence.Tests.csproj" />
   </Folder>
 </Solution>
