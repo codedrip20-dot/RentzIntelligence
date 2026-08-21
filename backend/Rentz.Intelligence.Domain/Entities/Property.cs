@@ -1,5 +1,6 @@
-namespace
-Rentz.Intelligence.Domain.Entities;
+using Pgvector;
+
+namespace Rentz.Intelligence.Domain.Entities;
 
 public class Property
 {
@@ -27,39 +28,62 @@ public class Property
 
     public string FurnishingType { get; private set; } = string.Empty;
 
+    // AI-generated semantic embedding
+    public Vector? Embedding { get; private set; }
+
     public ICollection<PropertyAmenity> Amenities { get; private set; }
         = new List<PropertyAmenity>();
 
+
+    // =========================================================
+    // CREATE PROPERTY
+    // =========================================================
+
     public static Property Create(
-    Guid id,
-    string name,
-    string description,
-    string propertyType,
-    string city,
-    string state,
-    string country,
-    decimal monthlyRent,
-    decimal securityDeposit,
-    int bedrooms,
-    int bathrooms,
-    string furnishingType)
-{
-    return new Property
+        Guid id,
+        string name,
+        string description,
+        string propertyType,
+        string city,
+        string state,
+        string country,
+        decimal monthlyRent,
+        decimal securityDeposit,
+        int bedrooms,
+        int bathrooms,
+        string furnishingType)
     {
-        Id = id,
-        Name = name,
-        Description = description,
-        PropertyType = propertyType,
-        City = city,
-        State = state,
-        Country = country,
-        MonthlyRent = monthlyRent,
-        SecurityDeposit = securityDeposit,
-        Bedrooms = bedrooms,
-        Bathrooms = bathrooms,
-        FurnishingType = furnishingType
-    };
-}
+        return new Property
+        {
+            Id = id,
+            Name = name,
+            Description = description,
+            PropertyType = propertyType,
+            City = city,
+            State = state,
+            Country = country,
+            MonthlyRent = monthlyRent,
+            SecurityDeposit = securityDeposit,
+            Bedrooms = bedrooms,
+            Bathrooms = bathrooms,
+            FurnishingType = furnishingType
+        };
+    }
+
+
+    // =========================================================
+    // EMBEDDING
+    // =========================================================
+
+    public void SetEmbedding(Vector embedding)
+    {
+        Embedding = embedding;
+    }
+
+
+    // =========================================================
+    // EF CORE
+    // =========================================================
 
     private Property()
     {

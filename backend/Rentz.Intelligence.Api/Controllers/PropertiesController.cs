@@ -58,7 +58,10 @@ public class PropertiesController : ControllerBase
     public async Task<IActionResult> SearchProperties(
         [FromQuery] string query)
     {
-        // Validate query
+        // =====================================================
+        // VALIDATE QUERY
+        // =====================================================
+
         if (string.IsNullOrWhiteSpace(query))
         {
             return BadRequest("Search query is required.");
@@ -91,9 +94,19 @@ public class PropertiesController : ControllerBase
                     searchRequest);
 
         // =====================================================
-        // STEP 4 — RETURN RANKED RESULTS
+        // STEP 4 — RETURN SEARCH RESULTS + AI SOURCE
         // =====================================================
 
-        return Ok(rankedProperties);
+        return Ok(new
+        {
+            query,
+
+            understanding = new
+            {
+                source = searchRequest.Source.ToString()
+            },
+
+            results = rankedProperties
+        });
     }
 }

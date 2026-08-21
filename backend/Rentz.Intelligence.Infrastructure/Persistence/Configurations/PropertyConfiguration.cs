@@ -43,5 +43,12 @@ public class PropertyConfiguration : IEntityTypeConfiguration<Property>
 
         builder.Property(p => p.SecurityDeposit)
             .HasPrecision(18, 2);
+
+        // =====================================================
+        // SEMANTIC EMBEDDING
+        // =====================================================
+
+        builder.Property(p => p.Embedding)
+            .HasColumnType("vector(768)");
     }
 }

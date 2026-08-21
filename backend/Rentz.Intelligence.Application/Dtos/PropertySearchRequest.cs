@@ -15,4 +15,7 @@ public class PropertySearchRequest
     public string? PropertyType { get; set; }
 
     public List<string> Amenities { get; set; } = new();
+
+    // How the query was understood
+    public QueryUnderstandingSource Source { get; set; }
 }

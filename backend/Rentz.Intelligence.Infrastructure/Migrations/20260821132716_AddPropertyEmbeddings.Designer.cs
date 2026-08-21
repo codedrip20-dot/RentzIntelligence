@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pgvector;
@@ -12,9 +13,11 @@ using Rentz.Intelligence.Infrastructure.Persistence;
 namespace Rentz.Intelligence.Infrastructure.Migrations
 {
     [DbContext(typeof(RentzDbContext))]
-    partial class RentzDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260821132716_AddPropertyEmbeddings")]
+    partial class AddPropertyEmbeddings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

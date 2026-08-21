@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Pgvector.EntityFrameworkCore;
 using Rentz.Intelligence.Application.Services;
 using Rentz.Intelligence.Infrastructure.Persistence;
 using Rentz.Intelligence.Infrastructure.Services;
@@ -9,8 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 // SERVICES
 // =========================================================
 
-// Controllers
 builder.Services.AddControllers();
+
 
 // =========================================================
 // DATABASE
@@ -18,31 +19,124 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<RentzDbContext>(options =>
     options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        npgsqlOptions =>
+        {
+            npgsqlOptions.UseVector();
+        }
     )
 );
 
+
 // =========================================================
-// APPLICATION SERVICES
+// HTTP CLIENT
 // =========================================================
 
-// Property service
+builder.Services.AddHttpClient();
+
+
+// =========================================================
+// GEMINI API KEY
+// =========================================================
+
+var geminiApiKey = builder.Configuration["Gemini:ApiKey"]
+    ?? throw new InvalidOperationException(
+        "Gemini API key is not configured."
+    );
+
+
+// =========================================================
+// EMBEDDING SERVICE
+// =========================================================
+
+builder.Services.AddScoped<EmbeddingService>(serviceProvider =>
+{
+    var httpClientFactory =
+        serviceProvider.GetRequiredService<IHttpClientFactory>();
+
+    var httpClient =
+        httpClientFactory.CreateClient();
+
+    return new EmbeddingService(
+        httpClient,
+        geminiApiKey
+    );
+});
+
+
+// =========================================================
+// PROPERTY EMBEDDING SERVICE
+// =========================================================
+
+builder.Services.AddScoped<
+    PropertyEmbeddingService
+>();
+
+
+// =========================================================
+// PROPERTY VECTOR SEARCH SERVICE
+// =========================================================
+
+builder.Services.AddScoped<
+    PropertyVectorSearchService
+>();
+
+
+// =========================================================
+// PROPERTY SERVICE
+// =========================================================
+
 builder.Services.AddScoped<
     IPropertyService,
     PropertyService
 >();
 
-// Query understanding service
+
+// =========================================================
+// QUERY UNDERSTANDING
+// =========================================================
+
+// ---------------------------------------------------------
+// Gemini AI service
+// ---------------------------------------------------------
+
 builder.Services.AddScoped<
-    IQueryUnderstandingService,
+    GeminiQueryUnderstandingService
+>(
+    _ => new GeminiQueryUnderstandingService(
+        geminiApiKey
+    )
+);
+
+
+// ---------------------------------------------------------
+// Regex / rule-based fallback service
+// ---------------------------------------------------------
+
+builder.Services.AddScoped<
     QueryUnderstandingService
 >();
 
-// Property ranking service
+
+// ---------------------------------------------------------
+// Hybrid AI + fallback service
+// ---------------------------------------------------------
+
+builder.Services.AddScoped<
+    IQueryUnderstandingService,
+    HybridQueryUnderstandingService
+>();
+
+
+// =========================================================
+// PROPERTY RANKING
+// =========================================================
+
 builder.Services.AddScoped<
     IPropertyRankingService,
     PropertyRankingService
 >();
+
 
 // =========================================================
 // OPENAPI
@@ -50,7 +144,13 @@ builder.Services.AddScoped<
 
 builder.Services.AddOpenApi();
 
+
+// =========================================================
+// BUILD APPLICATION
+// =========================================================
+
 var app = builder.Build();
+
 
 // =========================================================
 // HTTP REQUEST PIPELINE
@@ -60,6 +160,7 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
 
 // HTTPS disabled temporarily for local API testing
 // app.UseHttpsRedirection();

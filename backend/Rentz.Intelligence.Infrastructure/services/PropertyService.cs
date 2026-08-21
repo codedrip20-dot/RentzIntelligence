@@ -40,7 +40,10 @@ public class PropertyService : IPropertyService
             return null;
         }
 
-        // Get amenities
+        // =====================================================
+        // AMENITIES
+        // =====================================================
+
         var amenities = await (
             from pa in _context.PropertyAmenities
             join a in _context.Amenities
@@ -51,7 +54,10 @@ public class PropertyService : IPropertyService
         .AsNoTracking()
         .ToListAsync();
 
-        // Get images
+        // =====================================================
+        // IMAGES
+        // =====================================================
+
         var images = await _context.PropertyImages
             .AsNoTracking()
             .Where(i => i.PropertyId == id)
@@ -63,7 +69,10 @@ public class PropertyService : IPropertyService
             })
             .ToListAsync();
 
-        // Get documents
+        // =====================================================
+        // DOCUMENTS
+        // =====================================================
+
         var documents = await _context.PropertyDocuments
             .AsNoTracking()
             .Where(d => d.PropertyId == id)
@@ -75,6 +84,10 @@ public class PropertyService : IPropertyService
                 Content = d.Content
             })
             .ToListAsync();
+
+        // =====================================================
+        // RESPONSE
+        // =====================================================
 
         return new PropertyDetailsResponse
         {
@@ -90,6 +103,7 @@ public class PropertyService : IPropertyService
             Bedrooms = property.Bedrooms,
             Bathrooms = property.Bathrooms,
             FurnishingType = property.FurnishingType,
+
             Amenities = amenities,
             Images = images,
             Documents = documents
@@ -168,10 +182,11 @@ public class PropertyService : IPropertyService
         if (!string.IsNullOrWhiteSpace(request.PropertyType))
         {
             var propertyType = request.PropertyType
-                .Trim();
+                .Trim()
+                .ToLower();
 
             query = query.Where(p =>
-                p.PropertyType == propertyType);
+                p.PropertyType.ToLower() == propertyType);
         }
 
         // =====================================================
