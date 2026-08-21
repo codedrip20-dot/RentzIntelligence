@@ -8,17 +8,14 @@ namespace Rentz.Intelligence.Api.Controllers;
 public class PropertiesController : ControllerBase
 {
     private readonly IPropertyService _propertyService;
-    private readonly IQueryUnderstandingService _queryUnderstandingService;
-    private readonly IPropertyRankingService _propertyRankingService;
+    private readonly IHybridPropertySearchService _hybridSearchService;
 
     public PropertiesController(
         IPropertyService propertyService,
-        IQueryUnderstandingService queryUnderstandingService,
-        IPropertyRankingService propertyRankingService)
+        IHybridPropertySearchService hybridSearchService)
     {
         _propertyService = propertyService;
-        _queryUnderstandingService = queryUnderstandingService;
-        _propertyRankingService = propertyRankingService;
+        _hybridSearchService = hybridSearchService;
     }
 
     // =========================================================
@@ -28,7 +25,8 @@ public class PropertiesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetProperties()
     {
-        var properties = await _propertyService.GetPropertiesAsync();
+        var properties =
+            await _propertyService.GetPropertiesAsync();
 
         return Ok(properties);
     }
@@ -40,7 +38,8 @@ public class PropertiesController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetProperty(Guid id)
     {
-        var property = await _propertyService.GetPropertyAsync(id);
+        var property =
+            await _propertyService.GetPropertyAsync(id);
 
         if (property == null)
         {
@@ -51,12 +50,13 @@ public class PropertiesController : ControllerBase
     }
 
     // =========================================================
-    // SEARCH + RANK PROPERTIES
+    // HYBRID PROPERTY SEARCH
     // =========================================================
 
     [HttpGet("search")]
     public async Task<IActionResult> SearchProperties(
-        [FromQuery] string query)
+        [FromQuery] string query,
+        CancellationToken cancellationToken)
     {
         // =====================================================
         // VALIDATE QUERY
@@ -68,45 +68,23 @@ public class PropertiesController : ControllerBase
         }
 
         // =====================================================
-        // STEP 1 — UNDERSTAND NATURAL LANGUAGE
+        // HYBRID SEARCH
         // =====================================================
 
-        var searchRequest =
-            await _queryUnderstandingService
-                .UnderstandQueryAsync(query);
+        var results =
+            await _hybridSearchService.SearchAsync(
+                query,
+                10,
+                cancellationToken);
 
         // =====================================================
-        // STEP 2 — FILTER PROPERTIES
-        // =====================================================
-
-        var properties =
-            await _propertyService
-                .SearchPropertiesAsync(searchRequest);
-
-        // =====================================================
-        // STEP 3 — RANK MATCHING PROPERTIES
-        // =====================================================
-
-        var rankedProperties =
-            await _propertyRankingService
-                .RankPropertiesAsync(
-                    properties,
-                    searchRequest);
-
-        // =====================================================
-        // STEP 4 — RETURN SEARCH RESULTS + AI SOURCE
+        // RETURN RESULTS
         // =====================================================
 
         return Ok(new
         {
             query,
-
-            understanding = new
-            {
-                source = searchRequest.Source.ToString()
-            },
-
-            results = rankedProperties
+            results
         });
     }
 }

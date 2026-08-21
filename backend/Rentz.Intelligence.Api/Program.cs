@@ -139,6 +139,16 @@ builder.Services.AddScoped<
 
 
 // =========================================================
+// HYBRID PROPERTY SEARCH
+// =========================================================
+
+builder.Services.AddScoped<
+    IHybridPropertySearchService,
+    HybridPropertySearchService
+>();
+
+
+// =========================================================
 // OPENAPI
 // =========================================================
 
