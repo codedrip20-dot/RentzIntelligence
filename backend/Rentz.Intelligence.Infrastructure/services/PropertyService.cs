@@ -190,6 +190,20 @@ public class PropertyService : IPropertyService
         }
 
         // =====================================================
+        // FURNISHING TYPE FILTER
+        // =====================================================
+
+        if (!string.IsNullOrWhiteSpace(request.FurnishingType))
+        {
+            var furnishingType = request.FurnishingType
+                .Trim()
+                .ToLower();
+
+            query = query.Where(p =>
+                p.FurnishingType.ToLower() == furnishingType);
+        }
+
+        // =====================================================
         // AMENITY FILTER
         // =====================================================
 

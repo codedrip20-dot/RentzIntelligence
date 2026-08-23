@@ -24,6 +24,19 @@ public class PropertyVectorSearchService
         int limit = 5,
         CancellationToken cancellationToken = default)
     {
+        return await SearchAsync(
+            query,
+            null,
+            limit,
+            cancellationToken);
+    }
+
+    public async Task<List<PropertyVectorSearchResult>> SearchAsync(
+        string query,
+        IReadOnlyCollection<Guid>? candidateIds,
+        int limit = 5,
+        CancellationToken cancellationToken = default)
+    {
         if (string.IsNullOrWhiteSpace(query))
         {
             throw new ArgumentException(
@@ -37,7 +50,7 @@ public class PropertyVectorSearchService
         }
 
         // =====================================================
-        // 1. Generate embedding for the user's search query
+        // 1. GENERATE QUERY EMBEDDING
         // =====================================================
 
         var embedding =
@@ -48,11 +61,32 @@ public class PropertyVectorSearchService
         var queryVector = new Vector(embedding);
 
         // =====================================================
-        // 2. Search PostgreSQL using cosine distance
+        // 2. START VECTOR QUERY
         // =====================================================
 
-        var results = await _db.Properties
-            .Where(p => p.Embedding != null)
+        var properties = _db.Properties
+            .Where(p => p.Embedding != null);
+
+        // =====================================================
+        // 3. APPLY STRUCTURED CANDIDATE FILTER
+        // =====================================================
+
+        if (candidateIds != null)
+        {
+            if (candidateIds.Count == 0)
+            {
+                return new List<PropertyVectorSearchResult>();
+            }
+
+            properties = properties
+                .Where(p => candidateIds.Contains(p.Id));
+        }
+
+        // =====================================================
+        // 4. SEMANTIC SEARCH
+        // =====================================================
+
+        var results = await properties
             .OrderBy(p =>
                 p.Embedding!.CosineDistance(queryVector))
             .Take(limit)
@@ -71,9 +105,6 @@ public class PropertyVectorSearchService
                 Bathrooms = p.Bathrooms,
                 FurnishingType = p.FurnishingType,
 
-                // Cosine distance:
-                // 0 = identical
-                // 1 = very different
                 Distance =
                     p.Embedding!.CosineDistance(queryVector)
             })

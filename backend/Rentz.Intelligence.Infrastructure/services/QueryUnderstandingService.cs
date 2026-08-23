@@ -24,6 +24,7 @@ public class QueryUnderstandingService : IQueryUnderstandingService
             MinBedrooms = ExtractMinBedrooms(normalizedQuery),
             MinBathrooms = ExtractMinBathrooms(normalizedQuery),
             PropertyType = ExtractPropertyType(normalizedQuery),
+            FurnishingType = ExtractFurnishingType(normalizedQuery),
             Amenities = ExtractAmenities(normalizedQuery)
         };
 
@@ -202,6 +203,48 @@ public class QueryUnderstandingService : IQueryUnderstandingService
             query.Contains(
                 type,
                 StringComparison.OrdinalIgnoreCase));
+    }
+
+    // =========================================================
+    // FURNISHING TYPE
+    // =========================================================
+
+    private static string? ExtractFurnishingType(string query)
+    {
+        // Fully furnished
+        if (query.Contains(
+                "fully furnished",
+                StringComparison.OrdinalIgnoreCase) ||
+            query.Contains(
+                "fully-furnished",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return "Fully Furnished";
+        }
+
+        // Semi furnished
+        if (query.Contains(
+                "semi furnished",
+                StringComparison.OrdinalIgnoreCase) ||
+            query.Contains(
+                "semi-furnished",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return "Semi Furnished";
+        }
+
+        // Unfurnished
+        if (query.Contains(
+                "unfurnished",
+                StringComparison.OrdinalIgnoreCase) ||
+            query.Contains(
+                "un-furnished",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return "Unfurnished";
+        }
+
+        return null;
     }
 
     // =========================================================

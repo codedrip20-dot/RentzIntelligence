@@ -80,6 +80,50 @@ public class PropertyRankingService : IPropertyRankingService
                 }
 
                 // =====================================================
+                // FURNISHING MATCH
+                // =====================================================
+
+                if (!string.IsNullOrWhiteSpace(request.FurnishingType) &&
+                    property.FurnishingType.Equals(
+                        request.FurnishingType,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    // No additional score here.
+                    //
+                    // FurnishingType is already a hard filter
+                    // inside PropertyService.
+                    //
+                    // We mention it as an explanation rather than
+                    // scoring it twice.
+
+                    reasons.Add(
+                        $"Furnishing requirement satisfied ({property.FurnishingType})");
+                }
+
+                // =====================================================
+                // AMENITY MATCH
+                // =====================================================
+
+                if (request.Amenities.Count > 0)
+                {
+                    // Amenities are already hard-filtered by
+                    // PropertyService.
+                    //
+                    // We therefore don't add score here.
+                    // Instead, explain that the requested amenities
+                    // were satisfied.
+
+                    foreach (var amenity in request.Amenities)
+                    {
+                        if (!string.IsNullOrWhiteSpace(amenity))
+                        {
+                            reasons.Add(
+                                $"Amenity requirement satisfied ({amenity})");
+                        }
+                    }
+                }
+
+                // =====================================================
                 // BUDGET / VALUE MATCH
                 // =====================================================
 
@@ -95,19 +139,32 @@ public class PropertyRankingService : IPropertyRankingService
                         if (budgetRatio <= 0.80m)
                         {
                             score += 30;
-                            reasons.Add("Excellent value within budget");
+                            reasons.Add(
+                                "Excellent value within budget");
                         }
                         else if (budgetRatio <= 0.90m)
                         {
                             score += 25;
-                            reasons.Add("Good value within budget");
+                            reasons.Add(
+                                "Good value within budget");
                         }
                         else
                         {
                             score += 20;
-                            reasons.Add("Within budget");
+                            reasons.Add(
+                                "Within budget");
                         }
                     }
+                }
+
+                // =====================================================
+                // MINIMUM RENT / VALUE CONTEXT
+                // =====================================================
+
+                if (request.MinRent.HasValue &&
+                    property.MonthlyRent >= request.MinRent.Value)
+                {
+                    reasons.Add("Minimum rent requirement satisfied");
                 }
 
                 // =====================================================
