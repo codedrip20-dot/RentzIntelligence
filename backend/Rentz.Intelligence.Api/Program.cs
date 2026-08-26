@@ -68,18 +68,14 @@ builder.Services.AddScoped<EmbeddingService>(serviceProvider =>
 // PROPERTY EMBEDDING SERVICE
 // =========================================================
 
-builder.Services.AddScoped<
-    PropertyEmbeddingService
->();
+builder.Services.AddScoped<PropertyEmbeddingService>();
 
 
 // =========================================================
 // PROPERTY VECTOR SEARCH SERVICE
 // =========================================================
 
-builder.Services.AddScoped<
-    PropertyVectorSearchService
->();
+builder.Services.AddScoped<PropertyVectorSearchService>();
 
 
 // =========================================================
@@ -96,10 +92,7 @@ builder.Services.AddScoped<
 // QUERY UNDERSTANDING
 // =========================================================
 
-// ---------------------------------------------------------
 // Gemini AI service
-// ---------------------------------------------------------
-
 builder.Services.AddScoped<
     GeminiQueryUnderstandingService
 >(
@@ -109,19 +102,13 @@ builder.Services.AddScoped<
 );
 
 
-// ---------------------------------------------------------
 // Regex / rule-based fallback service
-// ---------------------------------------------------------
-
 builder.Services.AddScoped<
     QueryUnderstandingService
 >();
 
 
-// ---------------------------------------------------------
 // Hybrid AI + fallback service
-// ---------------------------------------------------------
-
 builder.Services.AddScoped<
     IQueryUnderstandingService,
     HybridQueryUnderstandingService
@@ -166,15 +153,28 @@ var app = builder.Build();
 // HTTP REQUEST PIPELINE
 // =========================================================
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-
-
-// HTTPS disabled temporarily for local API testing
+// HTTPS disabled temporarily for Render/local API testing
 // app.UseHttpsRedirection();
 
+
+// =========================================================
+// OPENAPI
+// =========================================================
+
+// Expose OpenAPI in both Development and Production.
+// This allows us to verify the live Render API.
+app.MapOpenApi();
+
+
+// =========================================================
+// CONTROLLERS
+// =========================================================
+
 app.MapControllers();
+
+
+// =========================================================
+// RUN
+// =========================================================
 
 app.Run();
