@@ -57,19 +57,25 @@ export default function Home() {
 
     try {
       /*
-       * Production request flow:
+       * Production data flow:
        *
        * Browser
        *    ↓
-       * /api/intelligence/search
+       * Next.js /api/intelligence/search
        *    ↓
-       * Next.js route.ts
+       * ASP.NET Core API on Render
        *    ↓
-       * https://rentzintelligence.onrender.com
+       * Query Understanding
        *    ↓
-       * ASP.NET Core
+       * Rule-based + Semantic Search
        *    ↓
        * Neon PostgreSQL + pgvector
+       *    ↓
+       * Hybrid Ranking
+       *    ↓
+       * Ranked Property Results
+       *    ↓
+       * Next.js UI
        */
 
       const response = await fetch(
@@ -164,6 +170,7 @@ export default function Home() {
               </span>
 
             </div>
+
           </div>
         </div>
       </header>
@@ -310,6 +317,169 @@ export default function Home() {
               {error}
             </div>
           )}
+
+        </div>
+      </section>
+
+      {/* =====================================================
+          HOW RENTZ INTELLIGENCE WORKS
+      ====================================================== */}
+
+      <section className="border-y border-white/5 bg-white/[0.015]">
+
+        <div className="mx-auto max-w-5xl px-6 py-16">
+
+          <div className="text-center">
+
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-4 py-2">
+
+              <span className="text-sm">
+                ⚙️
+              </span>
+
+              <span className="text-xs font-semibold uppercase tracking-wider text-blue-400">
+                Behind the search
+              </span>
+
+            </div>
+
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              How Rentz Intelligence works
+            </h2>
+
+            <p className="mx-auto mt-5 max-w-3xl text-sm leading-7 text-slate-400 sm:text-base">
+              When you submit a search, your natural-language query
+              is sent through the Rentz Intelligence API, where the
+              system first interprets your requirements using AI and
+              rule-based query understanding. The search engine then
+              combines structured property matching with semantic
+              vector search powered by PostgreSQL and pgvector.
+              These signals are evaluated together by the hybrid
+              ranking engine, which calculates how well each property
+              matches your request and returns the highest-ranked
+              results to the frontend. This allows Rentz to understand
+              not only exact requirements such as location, budget,
+              bedrooms, and furnishing, but also the meaning and
+              context behind the way a user describes what they want.
+            </p>
+
+          </div>
+
+          {/* Data Flow */}
+
+          <div className="mt-10 grid gap-3 md:grid-cols-5">
+
+            {/* Step 1 */}
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-center">
+
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-lg">
+                🔍
+              </div>
+
+              <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                01
+              </p>
+
+              <h3 className="mt-1 text-sm font-semibold">
+                User Query
+              </h3>
+
+              <p className="mt-2 text-xs leading-5 text-slate-500">
+                Natural language request
+              </p>
+
+            </div>
+
+            {/* Step 2 */}
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-center">
+
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-lg">
+                🧠
+              </div>
+
+              <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                02
+              </p>
+
+              <h3 className="mt-1 text-sm font-semibold">
+                Understand
+              </h3>
+
+              <p className="mt-2 text-xs leading-5 text-slate-500">
+                AI + rule-based analysis
+              </p>
+
+            </div>
+
+            {/* Step 3 */}
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-center">
+
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-lg">
+                🗄️
+              </div>
+
+              <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                03
+              </p>
+
+              <h3 className="mt-1 text-sm font-semibold">
+                Search
+              </h3>
+
+              <p className="mt-2 text-xs leading-5 text-slate-500">
+                PostgreSQL + pgvector
+              </p>
+
+            </div>
+
+            {/* Step 4 */}
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-center">
+
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-lg">
+                📊
+              </div>
+
+              <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                04
+              </p>
+
+              <h3 className="mt-1 text-sm font-semibold">
+                Rank
+              </h3>
+
+              <p className="mt-2 text-xs leading-5 text-slate-500">
+                Hybrid scoring
+              </p>
+
+            </div>
+
+            {/* Step 5 */}
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-center">
+
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-lg">
+                🏠
+              </div>
+
+              <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                05
+              </p>
+
+              <h3 className="mt-1 text-sm font-semibold">
+                Results
+              </h3>
+
+              <p className="mt-2 text-xs leading-5 text-slate-500">
+                Best matching properties
+              </p>
+
+            </div>
+
+          </div>
 
         </div>
       </section>
