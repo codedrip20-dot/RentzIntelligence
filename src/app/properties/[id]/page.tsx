@@ -42,28 +42,44 @@ interface PropertyPageProps {
   }>;
 }
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5025";
+// =========================================================
+// PRODUCTION BACKEND
+// =========================================================
+
+const API_BASE_URL = "https://rentzintelligence.onrender.com";
+
+// =========================================================
+// GET PROPERTY
+// =========================================================
 
 async function getProperty(id: string): Promise<Property | null> {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/api/properties/${id}`,
+      `${API_BASE_URL}/api/Properties/${id}`,
       {
         cache: "no-store",
       }
     );
 
     if (!response.ok) {
+      console.error(
+        `Failed to fetch property. Status: ${response.status}`
+      );
+
       return null;
     }
 
     return await response.json();
   } catch (error) {
     console.error("Failed to fetch property:", error);
+
     return null;
   }
 }
+
+// =========================================================
+// PROPERTY PAGE
+// =========================================================
 
 export default async function PropertyPage({
   params,
@@ -80,9 +96,10 @@ export default async function PropertyPage({
     return (
       <main className="min-h-screen bg-slate-50 px-6 py-12">
         <div className="mx-auto max-w-5xl">
+
           <Link
             href="/"
-            className="text-sm font-medium text-blue-600 hover:text-blue-700"
+            className="text-sm font-medium text-blue-600 transition hover:text-blue-700"
           >
             ← Back to search
           </Link>
@@ -105,6 +122,10 @@ export default async function PropertyPage({
     );
   }
 
+  // =========================================================
+  // LOCATION
+  // =========================================================
+
   const location = [
     property.city,
     property.state,
@@ -113,13 +134,17 @@ export default async function PropertyPage({
     .filter(Boolean)
     .join(", ");
 
+  // =========================================================
+  // PAGE
+  // =========================================================
+
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-10">
       <div className="mx-auto max-w-6xl">
 
         {/* =====================================================
             BACK
-        ===================================================== */}
+        ====================================================== */}
 
         <Link
           href="/"
@@ -130,7 +155,7 @@ export default async function PropertyPage({
 
         {/* =====================================================
             HERO
-        ===================================================== */}
+        ====================================================== */}
 
         <section className="mt-6 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
 
@@ -148,6 +173,7 @@ export default async function PropertyPage({
               />
 
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-8">
+
                 <p className="text-sm font-medium text-white/80">
                   {property.propertyType}
                 </p>
@@ -159,6 +185,7 @@ export default async function PropertyPage({
                 <p className="mt-2 text-sm text-white/80">
                   📍 {location}
                 </p>
+
               </div>
             </div>
           ) : (
@@ -169,7 +196,7 @@ export default async function PropertyPage({
             </div>
           )}
 
-          {/* Property header */}
+          {/* Property Header */}
 
           <div className="flex flex-col gap-6 p-8 md:flex-row md:items-center md:justify-between">
 
@@ -187,25 +214,33 @@ export default async function PropertyPage({
               </p>
             </div>
 
+            {/* Rent */}
+
             <div className="rounded-2xl bg-slate-900 px-7 py-5 text-white">
+
               <p className="text-sm text-slate-400">
                 Monthly Rent
               </p>
 
               <p className="mt-1 text-3xl font-bold">
-                ₹{property.monthlyRent.toLocaleString("en-IN")}
+                ₹
+                {property.monthlyRent.toLocaleString(
+                  "en-IN"
+                )}
               </p>
 
               <p className="mt-1 text-xs text-slate-400">
                 per month
               </p>
+
             </div>
+
           </div>
         </section>
 
         {/* =====================================================
             QUICK INFORMATION
-        ===================================================== */}
+        ====================================================== */}
 
         <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
@@ -233,7 +268,7 @@ export default async function PropertyPage({
 
         {/* =====================================================
             DESCRIPTION
-        ===================================================== */}
+        ====================================================== */}
 
         <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
 
@@ -250,7 +285,7 @@ export default async function PropertyPage({
 
         {/* =====================================================
             FINANCIAL DETAILS
-        ===================================================== */}
+        ====================================================== */}
 
         <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
 
@@ -261,23 +296,33 @@ export default async function PropertyPage({
           <div className="mt-5 grid gap-4 md:grid-cols-2">
 
             <div className="rounded-2xl bg-slate-50 p-6">
+
               <p className="text-sm text-slate-500">
                 Monthly Rent
               </p>
 
               <p className="mt-2 text-2xl font-bold text-slate-900">
-                ₹{property.monthlyRent.toLocaleString("en-IN")}
+                ₹
+                {property.monthlyRent.toLocaleString(
+                  "en-IN"
+                )}
               </p>
+
             </div>
 
             <div className="rounded-2xl bg-slate-50 p-6">
+
               <p className="text-sm text-slate-500">
                 Security Deposit
               </p>
 
               <p className="mt-2 text-2xl font-bold text-slate-900">
-                ₹{property.securityDeposit.toLocaleString("en-IN")}
+                ₹
+                {property.securityDeposit.toLocaleString(
+                  "en-IN"
+                )}
               </p>
+
             </div>
 
           </div>
@@ -286,7 +331,7 @@ export default async function PropertyPage({
 
         {/* =====================================================
             AMENITIES
-        ===================================================== */}
+        ====================================================== */}
 
         <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
 
@@ -316,8 +361,8 @@ export default async function PropertyPage({
         </section>
 
         {/* =====================================================
-            ALL IMAGES
-        ===================================================== */}
+            PROPERTY GALLERY
+        ====================================================== */}
 
         {property.images.length > 1 && (
           <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
@@ -335,7 +380,10 @@ export default async function PropertyPage({
                 >
                   <img
                     src={image.url}
-                    alt={image.altText ?? property.name}
+                    alt={
+                      image.altText ??
+                      property.name
+                    }
                     className="h-60 w-full object-cover transition duration-300 hover:scale-105"
                   />
                 </div>
@@ -348,7 +396,7 @@ export default async function PropertyPage({
 
         {/* =====================================================
             PROPERTY ID
-        ===================================================== */}
+        ====================================================== */}
 
         <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6">
 
@@ -380,6 +428,7 @@ function InfoCard({
 }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+
       <p className="text-sm text-slate-500">
         {label}
       </p>
@@ -387,6 +436,7 @@ function InfoCard({
       <p className="mt-2 text-lg font-semibold capitalize text-slate-900">
         {value}
       </p>
+
     </div>
   );
 }
